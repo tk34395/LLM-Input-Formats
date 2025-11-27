@@ -15,6 +15,8 @@ const rl = readline.createInterface({ input, output });
 const apiKey = process.env.ANTHROPIC_API_KEY || '';
 const INPUT_FILE = path.resolve(process.cwd(), 'input.txt');
 const OUTPUT_FILE = path.resolve(process.cwd(), 'output.txt');
+const LLM_QUERY_FILE = path.resolve(process.cwd(), 'llm-query.txt');
+const LLM_RESPONSE_FILE = path.resolve(process.cwd(), 'llm-query-response.txt');
 
 const formatChoices = [
   { key: '1', name: 'ASON', encode: encodeAson },
@@ -159,22 +161,33 @@ const handleAnthropic = async () => {
     return false;
   }
 
-  const query = await promptUntilValid('Enter the query for Anthropic (or B to go back):', (answer) => {
-    const trimmed = answer.trim();
-    if (!trimmed) {
-      return { valid: false, message: 'Query cannot be empty.' };
-    }
-    if (trimmed.toUpperCase() === 'B') {
+  const query = await promptUntilValid('Press Enter to load query from llm-query.txt or type B to go back:', (answer) => {
+    const trimmed = answer.trim().toUpperCase();
+    if (trimmed === 'B') {
       return { valid: true, value: 'B' };
     }
-    return { valid: true, value: trimmed };
+    return { valid: true, value: '' };
   });
 
   if (query === 'B') {
     return false;
   }
 
-  const payload = buildAnthropicPayload(query);
+  let llmQuery;
+  try {
+    llmQuery = (await readFile(LLM_QUERY_FILE, 'utf8')).trim();
+    if (!llmQuery) {
+      throw new Error('Query file is empty.');
+    }
+  } catch (error) {
+    console.error(
+      `Failed to read LLM query from ${path.basename(LLM_QUERY_FILE)}: ${error.message}`
+    );
+    return false;
+  }
+
+  console.log(`\nCalling Anthropic API with ${path.basename(LLM_QUERY_FILE)}...\n`);
+  const payload = buildAnthropicPayload(llmQuery);
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -196,13 +209,12 @@ const handleAnthropic = async () => {
       );
     }
 
-    const contentBlock = data?.content?.[0];
-    if (contentBlock?.text) {
-      console.log('\nAnthropic response:\n', contentBlock.text);
-    } else {
-      console.log('\nAnthropic response (raw):\n', JSON.stringify(data, null, 2));
-    }
-  } catch (error) {
+    await writeFile(LLM_RESPONSE_FILE, JSON.stringify(data, null, 2), 'utf8');
+    console.log(
+      `\nFull Anthropic response JSON written to ${path.basename(LLM_RESPONSE_FILE)}.\n`
+    );
+    console.log('\nFull Anthropic response JSON:\n', data);
+} catch (error) {
     console.error('Anthropic request failed:', error.message || error);
   }
 

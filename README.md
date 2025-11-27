@@ -30,7 +30,8 @@ This project demonstrates four high-efficiency serialization formats (ASON, JDON
    ```
    The NetSuite variables are only required if you want the MCP server information included in the payload.
 4. Place the JSON you want to convert into `input.txt` (same directory as `main.js`). Each run overwrites `output.txt` with the latest encoded payload.
-5. Start the CLI:
+5. Author any Anthropic prompt in `llm-query.txt` (the file is read verbatim when you choose option 2). Responses are persisted to `llm-query-response.txt`.
+6. Start the CLI:
    ```
    node main.js
    ```
@@ -44,8 +45,8 @@ After every action the CLI asks *“Do you want to exit? (Y/y to exit, anything 
    - `2` Send a prompt to Anthropic
 2. **Conversion Menu** – if you picked option 1 you can select:
    - `ASON`, `JDON`, `TONL`, `TOON`, or `B` to go back
-3. **Input files** – Conversion mode reads the entire JSON payload from `input.txt`; blank files or invalid JSON abort the conversion.
-4. **Output** – Conversion results are written to `output.txt` (and the path is logged). Anthropic calls still print either the first text block or the raw JSON response to the console.
+3. **Input files** – Conversion mode reads JSON from `input.txt`; Anthropic mode reads the message from `llm-query.txt`. Blank or missing files cancel the operation with an error.
+4. **Output** – Conversion results are written to `output.txt` (and the path is logged). Anthropic calls write the complete JSON response to `llm-query-response.txt` in addition to console logs.
 
 ### Format Modules
 
