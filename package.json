@@ -1,0 +1,13 @@
+{
+  "name": "llm-input-formats",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.1",
+    "@ason-format/ason": "^2.0.0-preview",
+    "@toon-format/toon": "^1.4.0",
+    "dotenv": "^16.4.5",
+    "tonl": "^2.3.1"
+  }
+}

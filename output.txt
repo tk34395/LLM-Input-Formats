@@ -1,0 +1,77 @@
+entity:
+  id: "44247"
+tranDate: 2024-01-15
+location:
+  id: "23"
+subsidiary:
+  id: "20"
+shippingAddress:
+  addr1: 123 Main St
+  addr2: Suite 100
+  city: New York
+  state: NY
+  zip: "10001"
+  country:
+    id: US
+  addressee: F3 Test Customer
+  attention: Shipping Department
+  addrPhone: 555-1234
+billingAddress:
+  addr1: 456 Business Ave
+  city: New York
+  state: NY
+  zip: "10002"
+  country:
+    id: US
+item:
+  items[6]:
+    -
+      item:
+        id: "1945"
+      quantity: 1
+      rate: 100
+      description: Product description 1
+    -
+      item:
+        id: "1946"
+      quantity: 2
+      rate: 200
+      description: Product description 2
+    -
+      item:
+        id: "691"
+      quantity: 3
+      rate: 300
+      description: Product description 3
+    -
+      item:
+        id: "253"
+      quantity: 4
+      rate: 400
+      description: Product description 4
+    -
+      item:
+        id: "1739"
+      quantity: 5
+      rate: 500
+      description: Product description 5
+    -
+      item:
+        id: "699"
+      quantity: 6
+      rate: 600
+      description: Product description 6
+shipMethod:
+  id: "2"
+shipDate: 2024-01-20
+terms:
+  id: "1"
+salesRep:
+  id: "19"
+memo: Sales order memo
+message: Customer message
+otherRefNum: PO-12345
+email: testcustomer@folio3.com
+toBeEmailed: true
+toBePrinted: false
+externalId: SO-EXT-001
