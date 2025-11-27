@@ -16,7 +16,7 @@ This project demonstrates four high-efficiency serialization formats (ASON, JDON
 1. Clone the repository:
    ```
    git clone https://github.com/tk34395/LLM-Input-Formats.git
-   cd LLM Input Formats
+   cd LLM-Input-Formats
    ```
 2. Install dependencies:
    ```
