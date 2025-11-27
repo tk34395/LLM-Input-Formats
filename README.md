@@ -24,9 +24,9 @@ This project demonstrates four high-efficiency serialization formats (ASON, JDON
    ```
 3. Create a `.env` file alongside `main.js` and add:
    ```
-   ANTHROPIC_API_KEY=your-api-key
-   NETSUITE_ACCOUNT_ID=optional-account
-   NETSUITE_AUTHORIZATION_TOKEN=optional-token
+   ANTHROPIC_API_KEY=your-anthropic-api-key
+   NETSUITE_ACCOUNT_ID=account_id
+   NETSUITE_AUTHORIZATION_TOKEN=bearer-token
    ```
    The NetSuite variables are only required if you want the MCP server information included in the payload.
 4. Place the JSON you want to convert into `input.txt` (same directory as `main.js`). Each run overwrites `output.txt` with the latest encoded payload.
