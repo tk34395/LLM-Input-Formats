@@ -108,7 +108,8 @@ const handleConversion = async () => {
       const printable =
         typeof formatted === 'string' ? formatted : JSON.stringify(formatted, null, 2);
       await writeConversionOutput(printable);
-      console.log(`\n${target.name} output written to ${path.basename(OUTPUT_FILE)}.\n`);
+      console.log(`\n${target.name} output written to ${path.basename(OUTPUT_FILE)}.`);
+      console.log(`\n${target.name} output preview:\n${printable}\n`);
     } catch (error) {
       console.error(`Failed to encode ${target.name}:`, error.message || error);
       return false;
