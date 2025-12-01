@@ -10,6 +10,7 @@ import { encodeTonl } from './tonl.js';
 import { encodeToon } from './toon.js';
 import { encodeCsv } from './csv.js';
 import { encodeYaml } from './yaml.js';
+import { encodeXml } from './xml.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ const formatChoices = [
   { key: '4', name: 'TONL', encode: encodeTonl },
   { key: '5', name: 'TOON', encode: encodeToon },
   { key: '6', name: 'YAML', encode: encodeYaml },
+  { key: '7', name: 'XML', encode: encodeXml },
 ];
 
 const mainMenu = `
@@ -43,6 +45,7 @@ Select the target format:
   4) TONL
   5) TOON
   6) YAML
+  7) XML
   B) Back to main menu
 `.trim();
 
@@ -80,15 +83,15 @@ const writeConversionOutput = async (payload) => {
 const handleConversion = async () => {
   while (true) {
     console.log(formatMenu);
-    const selection = await promptUntilValid('Choose a format (1-6 or B):', (answer) => {
+    const selection = await promptUntilValid('Choose a format (1-7 or B):', (answer) => {
       if (!answer) {
-        return { valid: false, message: 'Input cannot be empty. Please choose 1-6 or B.' };
+        return { valid: false, message: 'Input cannot be empty. Please choose 1-7 or B.' };
       }
       const normalized = answer.trim().toUpperCase();
-      if (['1', '2', '3', '4', '5', '6'].includes(normalized) || normalized === 'B') {
+      if (['1', '2', '3', '4', '5', '6', '7'].includes(normalized) || normalized === 'B') {
         return { valid: true, value: normalized };
       }
-      return { valid: false, message: 'Invalid choice. Please enter 1, 2, 3, 4, 5, 6, or B/b.' };
+      return { valid: false, message: 'Invalid choice. Please enter 1, 2, 3, 4, 5, 6, 7, or B/b.' };
     });
 
     if (selection === 'B') {
