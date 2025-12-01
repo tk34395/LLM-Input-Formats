@@ -1,6 +1,6 @@
 ## LLM Input Formats CLI
 
-This project demonstrates five high-efficiency serialization formats (ASON, JDON, TONL, TOON, and CSV) alongside a simple Anthropic messaging client. The `main.js` script acts as an interactive CLI that keeps prompting until you explicitly exit, allowing you to:
+This project demonstrates six high-efficiency serialization formats (CSV, ASON, JDON, TONL, TOON, and YAML) alongside a simple Anthropic messaging client. The `main.js` script acts as an interactive CLI that keeps prompting until you explicitly exit, allowing you to:
 
 - Convert arbitrary JSON into one of the supported formats
 - Dispatch a prompt to Anthropic's `/v1/messages` endpoint with the exact headers requested (`x-api-key`, `anthropic-version`, `anthropic-beta`)
@@ -44,7 +44,7 @@ After every action the CLI asks *“Do you want to exit? (Y/y to exit, anything 
    - `1` Convert JSON into a format
    - `2` Send a prompt to Anthropic
 2. **Conversion Menu** – if you picked option 1 you can select:
-   - `CSV`, `ASON`, `JDON`, `TONL`, `TOON`, or `B` to go back
+   - `CSV`, `ASON`, `JDON`, `TONL`, `TOON`, `YAML`, or `B` to go back
 3. **Input files** – Conversion mode reads JSON from `input.txt`; Anthropic mode reads the message from `llm-query.txt`. Blank or missing files cancel the operation with an error.
 4. **Output** – Conversion results are written to `output.txt` (and the path is logged). Anthropic calls write the complete JSON response to `llm-query-response.txt` in addition to console logs.
 
@@ -70,6 +70,10 @@ Each format has a small dedicated module that exposes focused encode/decode help
   - Uses `json-2-csv` package
   - `encodeCsv(data)` converts JSON objects/arrays to CSV format
   - `decodeCsv(csvString)` converts CSV back to JSON array
+- `yaml.js`
+  - Uses `@catalystic/json-to-yaml` for encoding and `js-yaml` for decoding
+  - `encodeYaml(data)` converts JSON objects/arrays to YAML format
+  - `decodeYaml(yamlString)` converts YAML back to JSON
 
 These helpers are imported into `main.js`, keeping the CLI logic decoupled from individual encoding libraries.
 
