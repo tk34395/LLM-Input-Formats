@@ -6,8 +6,10 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.1",
     "@ason-format/ason": "^2.0.0-preview",
+    "@mrodrig/json-2-csv-cli": "^5.5.9",
     "@toon-format/toon": "^1.4.0",
     "dotenv": "^16.4.5",
+    "json-2-csv": "^5.5.9",
     "tonl": "^2.3.1"
   }
 }

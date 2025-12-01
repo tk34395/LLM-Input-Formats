@@ -8,6 +8,7 @@ import { encodeAson } from './ason.js';
 import { encodeJdon } from './JDON.js';
 import { encodeTonl } from './tonl.js';
 import { encodeToon } from './toon.js';
+import { encodeCsv } from './csv.js';
 
 dotenv.config();
 
@@ -19,10 +20,11 @@ const LLM_QUERY_FILE = path.resolve(process.cwd(), 'llm-query.txt');
 const LLM_RESPONSE_FILE = path.resolve(process.cwd(), 'llm-query-response.txt');
 
 const formatChoices = [
-  { key: '1', name: 'ASON', encode: encodeAson },
-  { key: '2', name: 'JDON', encode: (data) => encodeJdon(data, { pretty: true, columnar: true }) },
-  { key: '3', name: 'TONL', encode: encodeTonl },
-  { key: '4', name: 'TOON', encode: encodeToon },
+  { key: '1', name: 'CSV', encode: encodeCsv },
+  { key: '2', name: 'ASON', encode: encodeAson },
+  { key: '3', name: 'JDON', encode: (data) => encodeJdon(data, { pretty: true, columnar: true }) },
+  { key: '4', name: 'TONL', encode: encodeTonl },
+  { key: '5', name: 'TOON', encode: encodeToon },
 ];
 
 const mainMenu = `
@@ -33,10 +35,11 @@ Select an option:
 
 const formatMenu = `
 Select the target format:
-  1) ASON
-  2) JDON
-  3) TONL
-  4) TOON
+  1) CSV
+  2) ASON
+  3) JDON
+  4) TONL
+  5) TOON
   B) Back to main menu
 `.trim();
 
@@ -74,15 +77,15 @@ const writeConversionOutput = async (payload) => {
 const handleConversion = async () => {
   while (true) {
     console.log(formatMenu);
-    const selection = await promptUntilValid('Choose a format (1-4 or B):', (answer) => {
+    const selection = await promptUntilValid('Choose a format (1-5 or B):', (answer) => {
       if (!answer) {
-        return { valid: false, message: 'Input cannot be empty. Please choose 1-4 or B.' };
+        return { valid: false, message: 'Input cannot be empty. Please choose 1-5 or B.' };
       }
       const normalized = answer.trim().toUpperCase();
-      if (['1', '2', '3', '4'].includes(normalized) || normalized === 'B') {
+      if (['1', '2', '3', '4', '5'].includes(normalized) || normalized === 'B') {
         return { valid: true, value: normalized };
       }
-      return { valid: false, message: 'Invalid choice. Please enter 1, 2, 3, 4, or B/b.' };
+      return { valid: false, message: 'Invalid choice. Please enter 1, 2, 3, 4, 5, or B/b.' };
     });
 
     if (selection === 'B') {
@@ -104,7 +107,7 @@ const handleConversion = async () => {
     }
 
     try {
-      const formatted = target.encode(jsonPayload);
+      const formatted = await Promise.resolve(target.encode(jsonPayload));
       const printable =
         typeof formatted === 'string' ? formatted : JSON.stringify(formatted, null, 2);
       await writeConversionOutput(printable);
@@ -129,11 +132,7 @@ const buildAnthropicPayload = (userMessage) => {
         content: [
           {
             type: 'text',
-            text: userMessage,
-            cache_control: {
-              type: 'ephemeral',
-              ttl: '1h',
-            },
+            text: userMessage
           },
         ],
       },
