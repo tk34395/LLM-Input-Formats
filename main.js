@@ -68,6 +68,12 @@ const parseJsonInput = async () => {
     if (!raw.trim()) {
       throw new Error('Input file is empty.');
     }
+    console.log('Raw input:');
+    console.log(raw);
+    console.log('--------------------------------');
+    console.log('Parsed input:');
+    console.log(JSON.parse(raw));
+    console.log('--------------------------------');
     return JSON.parse(raw);
   } catch (error) {
     throw new Error(
@@ -181,10 +187,49 @@ const handleAnthropic = async () => {
 
   let llmQuery;
   try {
+    console.log('Reading LLM query from:');
+    console.log(LLM_QUERY_FILE);
+    console.log('--------------------------------');
     llmQuery = (await readFile(LLM_QUERY_FILE, 'utf8')).trim();
     if (!llmQuery) {
       throw new Error('Query file is empty.');
     }
+
+    // Check if <CONVERTED_FORMAT_PAYLOAD> placeholder exists in the query
+    const hasPayloadPlaceholder = llmQuery.includes('<CONVERTED_FORMAT_PAYLOAD>');
+
+    if (hasPayloadPlaceholder) {
+      // Validate that output.txt exists and is not empty
+      let outputContent;
+      try {
+        outputContent = (await readFile(OUTPUT_FILE, 'utf8')).trim();
+        if (!outputContent) {
+          throw new Error(
+            `The query contains <CONVERTED_FORMAT_PAYLOAD> placeholder, but ${path.basename(OUTPUT_FILE)} is empty. ` +
+            `Please ensure ${path.basename(OUTPUT_FILE)} contains the payload data.`
+          );
+        }
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          throw new Error(
+            `The query contains <CONVERTED_FORMAT_PAYLOAD> placeholder, but ${path.basename(OUTPUT_FILE)} does not exist. ` +
+            `Please create ${path.basename(OUTPUT_FILE)} with the payload data or remove <CONVERTED_FORMAT_PAYLOAD> from ${path.basename(LLM_QUERY_FILE)}.`
+          );
+        }
+        throw new Error(
+          `Failed to read payload from ${path.basename(OUTPUT_FILE)}: ${error.message}`
+        );
+      }
+
+      // Replace all occurrences of <CONVERTED_FORMAT_PAYLOAD> with the actual payload content
+      llmQuery = llmQuery.replace(/<CONVERTED_FORMAT_PAYLOAD>/g, outputContent);
+      console.log('LLM query (with payload from output.txt):');
+    } else {
+      console.log('LLM query:');
+    }
+
+    console.log(llmQuery);
+    console.log('--------------------------------');
   } catch (error) {
     console.error(
       `Failed to read LLM query from ${path.basename(LLM_QUERY_FILE)}: ${error.message}`
@@ -220,7 +265,7 @@ const handleAnthropic = async () => {
       `\nFull Anthropic response JSON written to ${path.basename(LLM_RESPONSE_FILE)}.\n`
     );
     console.log('\nFull Anthropic response JSON:\n', data);
-} catch (error) {
+  } catch (error) {
     console.error('Anthropic request failed:', error.message || error);
   }
 

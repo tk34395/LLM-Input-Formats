@@ -30,7 +30,7 @@ This project demonstrates seven high-efficiency serialization formats (CSV, ASON
    ```
    The NetSuite variables are only required if you want the MCP server information included in the payload.
 4. Place the JSON you want to convert into `input.txt` (same directory as `main.js`). Each run overwrites `output.txt` with the latest encoded payload.
-5. Author any Anthropic prompt in `llm-query.txt` (the file is read verbatim when you choose option 2). Responses are persisted to `llm-query-response.txt`.
+5. Author any Anthropic prompt in `llm-query.txt` (the file is read verbatim when you choose option 2). You can include payloads using the `<CONVERTED_FORMAT_PAYLOAD>` placeholder (automatically replaced with content from `output.txt`) or by directly pasting the payload into the file. See the "Including Payloads in LLM Queries" section below for details. Responses are persisted to `llm-query-response.txt`.
 6. Start the CLI:
    ```
    node main.js
@@ -86,9 +86,47 @@ These helpers are imported into `main.js`, keeping the CLI logic decoupled from 
 - Endpoint: `https://api.anthropic.com/v1/messages`
 - Headers: `x-api-key`, `anthropic-version: 2023-06-01`, `anthropic-beta: mcp-client-2025-04-04`
 - Payload:
-  - Model: `claude-sonnet-4-20250514`
+  - Model: `claude-sonnet-4-5-20250929`
   - Messages contain a single user block with cache-control metadata
   - Optional `mcp_servers` entry is added when `NETSUITE_ACCOUNT_ID` and `NETSUITE_AUTHORIZATION_TOKEN` are available
+
+#### Including Payloads in LLM Queries
+
+You have two options for including payloads in your LLM queries:
+
+##### Option A: Using the `<CONVERTED_FORMAT_PAYLOAD>` Placeholder
+
+This method automatically inserts the content from `output.txt` into your query:
+
+1. **Convert your JSON** – Use option 1 to convert JSON from `input.txt` to any format. The result is saved to `output.txt`.
+2. **Add the placeholder** – In `llm-query.txt`, include `<CONVERTED_FORMAT_PAYLOAD>` where you want the payload to appear. For example:
+   ```
+   Create a sales order in NetSuite with below data:
+   <CONVERTED_FORMAT_PAYLOAD>
+   ```
+3. **Send the request** – When you choose option 2, the system will:
+   - Detect the `<CONVERTED_FORMAT_PAYLOAD>` placeholder in `llm-query.txt`
+   - Read the content from `output.txt`
+   - Replace all occurrences of `<CONVERTED_FORMAT_PAYLOAD>` with the actual payload
+   - Send the complete query to the Anthropic API
+
+**Validations:**
+- If `<CONVERTED_FORMAT_PAYLOAD>` is present in `llm-query.txt`, `output.txt` must exist and not be empty
+- If `output.txt` is missing or empty when `<CONVERTED_FORMAT_PAYLOAD>` is used, the operation will fail with a descriptive error message
+
+##### Option B: Direct Payload Insertion
+
+Alternatively, you can directly paste the payload content into `llm-query.txt`:
+
+1. **Copy your payload** – Copy the payload content from `output.txt` or any other source.
+2. **Paste directly** – In `llm-query.txt`, remove `<CONVERTED_FORMAT_PAYLOAD>` (if present) and paste your payload directly. For example:
+   ```
+   Create a sales order in NetSuite with below data:
+   <entity><id>44247</id></entity><tranDate>2024-01-15</tranDate>...
+   ```
+3. **Send the request** – When you choose option 2, the query will be sent as-is without any modifications.
+
+**Note:** If `<CONVERTED_FORMAT_PAYLOAD>` is not present in `llm-query.txt`, the query is sent as-is without any modifications, regardless of whether `output.txt` exists.
 
 If the API key is missing the CLI shows guidance and returns to the menu instead of crashing.
 
