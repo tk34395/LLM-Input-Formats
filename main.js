@@ -86,19 +86,23 @@ const writeConversionOutput = async (payload) => {
   await writeFile(OUTPUT_FILE, payload, 'utf8');
 };
 
-const handleConversion = async () => {
+const handleConversion = async (formatSelection = null) => {
   while (true) {
-    console.log(formatMenu);
-    const selection = await promptUntilValid('Choose a format (1-7 or B):', (answer) => {
-      if (!answer) {
-        return { valid: false, message: 'Input cannot be empty. Please choose 1-7 or B.' };
-      }
-      const normalized = answer.trim().toUpperCase();
-      if (['1', '2', '3', '4', '5', '6', '7'].includes(normalized) || normalized === 'B') {
-        return { valid: true, value: normalized };
-      }
-      return { valid: false, message: 'Invalid choice. Please enter 1, 2, 3, 4, 5, 6, 7, or B/b.' };
-    });
+    let selection = formatSelection;
+
+    if (!selection) {
+      console.log(formatMenu);
+      selection = await promptUntilValid('Choose a format (1-7 or B):', (answer) => {
+        if (!answer) {
+          return { valid: false, message: 'Input cannot be empty. Please choose 1-7 or B.' };
+        }
+        const normalized = answer.trim().toUpperCase();
+        if (['1', '2', '3', '4', '5', '6', '7'].includes(normalized) || normalized === 'B') {
+          return { valid: true, value: normalized };
+        }
+        return { valid: false, message: 'Invalid choice. Please enter 1, 2, 3, 4, 5, 6, 7, or B/b.' };
+      });
+    }
 
     if (selection === 'B') {
       return false;
@@ -107,6 +111,9 @@ const handleConversion = async () => {
     const target = formatChoices.find((choice) => choice.key === selection);
     if (!target) {
       console.log('Unknown format. Please try again.');
+      if (formatSelection) {
+        return false;
+      }
       continue;
     }
 
@@ -167,22 +174,24 @@ const buildAnthropicPayload = (userMessage) => {
   return payload;
 };
 
-const handleAnthropic = async () => {
+const handleAnthropic = async (skipPrompt = false) => {
   if (!apiKey) {
     console.log('ANTHROPIC_API_KEY is not set. Please add it to your .env file before calling the API.');
     return false;
   }
 
-  const query = await promptUntilValid('Press Enter to load query from llm-query.txt or type B to go back:', (answer) => {
-    const trimmed = answer.trim().toUpperCase();
-    if (trimmed === 'B') {
-      return { valid: true, value: 'B' };
-    }
-    return { valid: true, value: '' };
-  });
+  if (!skipPrompt) {
+    const query = await promptUntilValid('Press Enter to load query from llm-query.txt or type B to go back:', (answer) => {
+      const trimmed = answer.trim().toUpperCase();
+      if (trimmed === 'B') {
+        return { valid: true, value: 'B' };
+      }
+      return { valid: true, value: '' };
+    });
 
-  if (query === 'B') {
-    return false;
+    if (query === 'B') {
+      return false;
+    }
   }
 
   let llmQuery;
@@ -278,32 +287,69 @@ const shouldExit = async () => {
 };
 
 const main = async () => {
-  console.log('Welcome to the LLM Input Formats CLI!');
-  let exitRequested = false;
+  // Parse command-line arguments
+  const args = process.argv.slice(2);
+  const hasArgs = args.length > 0;
 
-  while (!exitRequested) {
-    console.log(`\n${mainMenu}\n`);
-    const action = await promptUntilValid('Choose option 1 or 2:', (answer) => {
-      if (answer === '1' || answer === '2') {
-        return { valid: true, value: answer };
-      }
-      return { valid: false, message: 'Please enter 1 or 2.' };
-    });
+  if (hasArgs) {
+    // Non-interactive mode
+    const action = args[0];
 
-    let performedAction = true;
     if (action === '1') {
-      performedAction = await handleConversion();
+      // Convert JSON to format
+      if (args.length < 2) {
+        console.error('Error: Format selection required. Usage: node main.js 1 <format>');
+        console.error('Formats: 1=CSV, 2=ASON, 3=JDON, 4=TONL, 5=TOON, 6=YAML, 7=XML');
+        process.exit(1);
+      }
+      const formatSelection = args[1];
+      if (!['1', '2', '3', '4', '5', '6', '7'].includes(formatSelection)) {
+        console.error(`Error: Invalid format "${formatSelection}". Must be 1-7.`);
+        console.error('Formats: 1=CSV, 2=ASON, 3=JDON, 4=TONL, 5=TOON, 6=YAML, 7=XML');
+        process.exit(1);
+      }
+      const success = await handleConversion(formatSelection);
+      process.exit(success ? 0 : 1);
     } else if (action === '2') {
-      performedAction = await handleAnthropic();
+      // Send request to Anthropic API
+      const success = await handleAnthropic(true);
+      process.exit(success ? 0 : 1);
+    } else {
+      console.error(`Error: Invalid action "${action}". Must be 1 or 2.`);
+      console.error('Usage:');
+      console.error('  node main.js 1 <format>  - Convert JSON to format (1-7)');
+      console.error('  node main.js 2           - Send request to Anthropic API');
+      process.exit(1);
+    }
+  } else {
+    // Interactive mode
+    console.log('Welcome to the LLM Input Formats CLI!');
+    let exitRequested = false;
+
+    while (!exitRequested) {
+      console.log(`\n${mainMenu}\n`);
+      const action = await promptUntilValid('Choose option 1 or 2:', (answer) => {
+        if (answer === '1' || answer === '2') {
+          return { valid: true, value: answer };
+        }
+        return { valid: false, message: 'Please enter 1 or 2.' };
+      });
+
+      let performedAction = true;
+      if (action === '1') {
+        performedAction = await handleConversion();
+      } else if (action === '2') {
+        performedAction = await handleAnthropic();
+      }
+
+      if (performedAction) {
+        exitRequested = await shouldExit();
+      }
     }
 
-    if (performedAction) {
-      exitRequested = await shouldExit();
-    }
+    console.log('Goodbye!');
+    rl.close();
   }
-
-  console.log('Goodbye!');
-  rl.close();
 };
 
 main().catch((error) => {

@@ -36,9 +36,46 @@ This project demonstrates seven high-efficiency serialization formats (CSV, ASON
    node main.js
    ```
 
-After every action the CLI asks *“Do you want to exit? (Y/y to exit, anything else to continue)”*. It will loop until you respond with `Y` or `y`.
+After every action the CLI asks *"Do you want to exit? (Y/y to exit, anything else to continue)"*. It will loop until you respond with `Y` or `y`.
 
-### CLI Flow
+### Non-Interactive Mode (Command-Line Arguments)
+
+You can also run the CLI non-interactively by passing command-line arguments. This allows you to execute the script as a one-liner without prompts:
+
+**Convert JSON to a format:**
+```cmd
+node main.js 1 <format>
+```
+
+Where `<format>` is:
+- `1` = CSV
+- `2` = ASON
+- `3` = JDON
+- `4` = TONL
+- `5` = TOON
+- `6` = YAML
+- `7` = XML
+
+**Examples:**
+```cmd
+node main.js 1 2    # Convert JSON to ASON
+node main.js 1 6    # Convert JSON to YAML
+node main.js 1 7    # Convert JSON to XML
+```
+
+**Send request to Anthropic API:**
+```cmd
+node main.js 2
+```
+
+**Notes:**
+- When using command-line arguments, the script runs once and exits automatically (no exit prompt)
+- If you run `node main.js` without arguments, it works in interactive mode as before
+- Error messages are displayed if invalid arguments are provided
+
+### CLI Flow (Interactive Mode)
+
+When running without arguments (`node main.js`), the CLI operates in interactive mode:
 
 1. **Main Menu** – choose between:
    - `1` Convert JSON into a format
@@ -47,6 +84,8 @@ After every action the CLI asks *“Do you want to exit? (Y/y to exit, anything 
    - `CSV`, `ASON`, `JDON`, `TONL`, `TOON`, `YAML`, `XML`, or `B` to go back
 3. **Input files** – Conversion mode reads JSON from `input.txt`; Anthropic mode reads the message from `llm-query.txt`. Blank or missing files cancel the operation with an error.
 4. **Output** – Conversion results are written to `output.txt` (and the path is logged). Anthropic calls write the complete JSON response to `llm-query-response.txt` in addition to console logs.
+
+**Note:** For non-interactive execution, see the "Non-Interactive Mode" section above.
 
 ### Format Modules
 
